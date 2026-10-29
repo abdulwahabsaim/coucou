@@ -89,9 +89,13 @@ fn page_url(app: &AppHandle) -> WebviewUrl {
 /// Creates the pill's window, hidden. Before the island, for WebView2's sake
 /// (see create_settings_window in lib.rs).
 pub fn setup(app: &AppHandle) {
-    let mut mode = platform::desktop_mode();
+    let mut mode = if std::env::var("COUCOU_NO_FLOW").is_ok() || std::env::var("COUCOU_LITE").is_ok() {
+        DesktopMode::Off
+    } else {
+        platform::desktop_mode()
+    };
     if mode == DesktopMode::Off {
-        crate::log::line("flow pill: no way to place it on this desktop");
+        crate::log::line("flow pill: disabled or no way to place it on this desktop");
     } else {
         let park = cfg!(windows);
         let mut builder = WebviewWindowBuilder::new(app, LABEL, page_url(app))

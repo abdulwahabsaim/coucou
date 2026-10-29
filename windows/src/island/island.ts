@@ -993,7 +993,17 @@ export class Island {
     requestAnimationFrame(this.frame);
   }
 
+  private lastDrawnFrame = 0;
   private frame = (nowMs: number) => {
+    const settling =
+      this.width.animating || this.height.animating || this.radius.animating;
+    if (!settling && nowMs - this.lastDrawnFrame < 32) {
+      if (this.running) {
+        requestAnimationFrame(this.frame);
+      }
+      return;
+    }
+    this.lastDrawnFrame = nowMs;
     const dt = Math.min(0.05, (nowMs - this.lastFrame) / 1000);
     this.lastFrame = nowMs;
 

@@ -388,8 +388,9 @@ pub fn make_non_activating(win: &WebviewWindow) {
         if !gw.is_realized() {
             // On X11 a Dock is kept above everything and is the only kind of
             // window, besides the desktop, that "show desktop" leaves alone.
-            // COUCOU_DOCK=0 falls back to a utility window.
-            let dock = std::env::var("COUCOU_DOCK").map(|v| v != "0").unwrap_or(true);
+            // On GNOME, Dock type hints reserve struts and shift top bar panel items.
+            // COUCOU_DOCK=1 opts into Dock; default is Utility.
+            let dock = std::env::var("COUCOU_DOCK").map(|v| v != "0").unwrap_or(false);
             gw.set_type_hint(if dock {
                 gtk::gdk::WindowTypeHint::Dock
             } else {
@@ -891,7 +892,7 @@ pub fn prepare_pill_window(win: &WebviewWindow, mode: super::DesktopMode) -> boo
         }
         super::DesktopMode::Window => {
             if !gw.is_realized() {
-                gw.set_type_hint(gtk::gdk::WindowTypeHint::Dock);
+                gw.set_type_hint(gtk::gdk::WindowTypeHint::Utility);
             }
             gw.set_keep_above(true);
             gw.connect_map_event(move |w, _| {

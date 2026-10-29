@@ -362,8 +362,19 @@ pub fn apply_geometry(app: &AppHandle, pref: &str, collapsed: bool) {
     let (lw, lh) = if collapsed { (STRIP_W, STRIP_H) } else { (PANEL_W, PANEL_H) };
     let pw = (lw * scale).round().max(1.0) as u32;
     let ph = (lh * scale).round().max(1.0) as u32;
-    let x = mp.x + (ms.width as i32 - pw as i32) / 2;
-    let y = mp.y;
+    let mut x = mp.x + (ms.width as i32 - pw as i32) / 2;
+    let mut y = mp.y;
+
+    if let Ok(val) = std::env::var("COUCOU_X_OFFSET") {
+        if let Ok(off) = val.trim().parse::<i32>() {
+            x += (off as f64 * scale).round() as i32;
+        }
+    }
+    if let Ok(val) = std::env::var("COUCOU_Y_OFFSET") {
+        if let Ok(off) = val.trim().parse::<i32>() {
+            y += (off as f64 * scale).round() as i32;
+        }
+    }
 
     // GTK never sizes a non-resizable window below its natural size (200 px
     // here), so on Linux the 6 px wake strip would stay a 200 px block. tao
