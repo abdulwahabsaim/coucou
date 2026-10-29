@@ -749,6 +749,10 @@ pub fn show_settings_window(app: &AppHandle) {
 /// Shows the Coucou window, on `page` when given ("dictation", "notes",
 /// "settings", "general", "shortcuts"…).
 pub fn show_hub(app: &AppHandle, page: Option<&str>) {
+    #[cfg(target_os = "linux")]
+    if app.get_webview_window(HUB_LABEL).is_none() {
+        create_settings_window(app);
+    }
     let Some(win) = app.get_webview_window(HUB_LABEL) else {
         log::line("Coucou window missing");
         return;
@@ -973,7 +977,12 @@ pub fn run() {
             app.manage(phone_link::PhoneLink::new(handle.clone()));
             tray::build(&handle)?;
             // Before the island: see create_settings_window.
+            #[cfg(windows)]
             create_settings_window(&handle);
+            #[cfg(target_os = "linux")]
+            if !std::env::var("COUCOU_LITE").map(|v| v != "0").unwrap_or(false) {
+                create_settings_window(&handle);
+            }
             // Same rule for Mochi's desktop window and the dictation pill.
             desktop::setup(&handle);
             flow::setup(&handle);
@@ -1019,7 +1028,7 @@ pub fn run() {
                 let _ = handle.autolaunch().enable();
             }
             let open_window = flow::get(&handle).map(|f| f.store.lock().unwrap().prefs.open_at_launch).unwrap_or(true);
-            if open_window && !launched_at_login() {
+            if open_window && !launched_at_login() && !std::env::var("COUCOU_LITE").map(|v| v != "0").unwrap_or(false) {
                 show_hub(&handle, None);
             }
             Ok(())
